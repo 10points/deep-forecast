@@ -40,15 +40,15 @@ class Evaluation:
         conn = engine.connect()
 
         # group by contract name
-        group = self.df_all.groupby(['model', 'contract_name'])
+        group = self.df_all.groupby(['model', 'contract'])
         # find max/min date for each contract name
         result = group.agg({'data_date':np.min})
 
         # query to DELETE every new prediction when getting latest prediction
-        del_sql_sql = "DELETE FROM stg_forecast_soybean_backtest where model='{model}' AND contract_name='{contract_name}' AND data_date>='{data_date}'"
+        del_sql_sql = "DELETE FROM stg_forecast_soybean_backtest where model='{model}' AND contract='{contract}' AND data_date>='{data_date}'"
 
         for idx, row in result.iterrows():
-            del_sql = del_sql_sql.format(model=idx[0], contract_name=idx[1], data_date=row['data_date'])
+            del_sql = del_sql_sql.format(model=idx[0], contract=idx[1], data_date=row['data_date'])
             print("######################")
             print(del_sql)
             print("######################")
@@ -65,7 +65,7 @@ class Evaluation:
         conn.close()
         logger.info("Prediction data have been uploaded")
 
-    def eval(self, dir_path):
+    def eval(self, dir_path, epochs: int):
         file_mkt_month = "market_month_to_train.csv"
         market_month_to_train = pd.read_csv(os.path.join(dir_path, file_mkt_month))
         #   storage_path = "./storage"
@@ -99,7 +99,7 @@ class Evaluation:
             # train data
             back_test_period = [7, 15, 30]
             for num in back_test_period:
-                logger.info(f"# of days in backtest: {num} days")
+                logger.info(f"# of days in backtest {market_month}: {num} days")
                 trainsize = len(prep_data)-num
                 train_df = prep_data[:trainsize]
                 test_df = prep_data[-num:]
@@ -119,7 +119,7 @@ class Evaluation:
                         hist_exog_list = exo_col, # <- Historical exogenous variables
                         scaler_type = 'robust',
                         # dropout_prob_theta=0.5,
-                        max_steps=10,
+                        max_steps=epochs,
                         # early_stop_patience_steps=5,
                         loss=MAE()),
                     DilatedRNN(h = horizon,
@@ -128,7 +128,7 @@ class Evaluation:
                         hist_exog_list = exo_col, # <- Historical exogenous variables
                         scaler_type = 'robust',
                         # dropout_prob_theta=0.5,
-                        max_steps=10,
+                        max_steps=epochs,
                         # early_stop_patience_steps=5,
                         loss=MAE())
                     ]
@@ -159,15 +159,15 @@ class Evaluation:
                 concatdate = np.concatenate([gen_date_series.values, gen_date_series.values], axis=0)
                 melted_df = melted_df.set_index(concatdate)
                 melted_df = melted_df.rename_axis("data_date")
-
+                
             
             
             # melted_df[["price_settle", "prediction", "model"]]
 
 
                 forecast_data.append(melted_df)
-
-
+        #         break
+        # break
         self.df_all = pd.concat(forecast_data, axis=0)
         self.df_all = self.df_all.rename(columns={"prediction":"forecast_price"})
         self.df_all = self.df_all.reset_index().rename(columns={"index":"data_date"})

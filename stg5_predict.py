@@ -103,7 +103,7 @@ class Prediction:
         y_hat = Y_hat_df.copy()
         y_hat = y_hat.drop(columns=["unique_id", "ds"])
         melted_df = pd.melt(y_hat, var_name='model', value_name='forecast_price')
-        melted_df["contract"] = market_month
+        melted_df["contract_name"] = market_month
 
         # generate date index
         max_date = max(prep_data["ds"])
@@ -117,6 +117,6 @@ class Prediction:
 
     self.df_all = pd.concat(forecast_df, axis=0)
     self.df_all = self.df_all.reset_index().rename(columns={"index":"data_date"})
-    self.df_all = self.df_all[["data_date", "forecast_price", "model", "contract"]]
+    self.df_all = self.df_all[["data_date", "forecast_price", "model", "contract_name"]]
 
     return self.df_all

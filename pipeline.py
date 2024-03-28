@@ -28,21 +28,21 @@ class Pipeline:
         STAGE_NAME = "TRAIN&EVALUATION"
         logger.info(f"[{STAGE_NAME}]: Start training and evaluating data")
         init_eval = Evaluation()
-        init_eval.eval(dir_path)
-        # init_eval.output_to_db()
+        init_eval.eval(dir_path, epochs=300)
+        init_eval.output_to_db()
         logger.info(f"[{STAGE_NAME}]: STAGE COMPLETE")
 
         STAGE_NAME = "FULL TRAINING"
         logger.info(f"[{STAGE_NAME}]: Start training full data")
         init_train = Training()
-        init_train.main(dir_path, n_futures=30, epochs=10)
+        init_train.main(dir_path, n_futures=30, epochs=300)
         logger.info(f"[{STAGE_NAME}]: STAGE COMPLETE")
 
         STAGE_NAME = "PREDICTION"
         logger.info(f"[{STAGE_NAME}]: Start prediction")
         init_prediction = Prediction()
         init_prediction.predict(dir_path)
-        # init_prediction.output_to_db()
+        init_prediction.output_to_db()
         logger.info(f"[{STAGE_NAME}]: STAGE COMPLETE")
 
 

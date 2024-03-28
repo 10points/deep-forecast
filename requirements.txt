@@ -6,3 +6,4 @@ matplotlib
 python-dotenv
 scikit-learn
 pymssql
+psycopg2
