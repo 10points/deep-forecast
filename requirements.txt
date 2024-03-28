@@ -1,0 +1,8 @@
+pandas
+openpyxl
+numpy
+neuralforecast
+matplotlib
+python-dotenv
+scikit-learn
+pymssql
