@@ -1,7 +1,10 @@
 from stg1_ingest import IngestData
-from stg2_trainAndevaluation import Evaluation
-from stg3_train import Training
-from stg4_predict import Prediction
+from stg2_prepare import DataPreparation
+from stg3_trainAndevaluation import Evaluation
+from stg4_train import Training
+from stg5_predict import Prediction
+from dotenv import load_dotenv
+import os
 from logger import logger
 
 class Pipeline:
@@ -16,11 +19,17 @@ class Pipeline:
         init_ingest.fetch()
         logger.info(f"[{STAGE_NAME}]: STAGE COMPLETE")
 
+        STAGE_NAME = "PREPARE DATA"
+        logger.info(f"[{STAGE_NAME}]: Start prepare data market_month contract")
+        init_prepare = DataPreparation(dir_path)
+        init_prepare.prepare_data_to_train() 
+        logger.info(f"[{STAGE_NAME}]: STAGE COMPLETE")
+
         STAGE_NAME = "TRAIN&EVALUATION"
         logger.info(f"[{STAGE_NAME}]: Start training and evaluating data")
         init_eval = Evaluation()
         init_eval.eval(dir_path)
-        init_eval.output_to_db()
+        # init_eval.output_to_db()
         logger.info(f"[{STAGE_NAME}]: STAGE COMPLETE")
 
         STAGE_NAME = "FULL TRAINING"
@@ -33,7 +42,7 @@ class Pipeline:
         logger.info(f"[{STAGE_NAME}]: Start prediction")
         init_prediction = Prediction()
         init_prediction.predict(dir_path)
-        init_prediction.output_to_db()
+        # init_prediction.output_to_db()
         logger.info(f"[{STAGE_NAME}]: STAGE COMPLETE")
 
 
@@ -41,6 +50,8 @@ class Pipeline:
 
 if __name__ == "__main__":
     # print("Hello World")
-    dir_path = "./storage"
+    load_dotenv()
+    dir_path= os.getenv("STORAGE_PATH")
+    # dir_path = "./storage"
     init_pipeline = Pipeline()
     init_pipeline.main(dir_path)
